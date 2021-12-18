@@ -86,14 +86,9 @@ def get_random_postcards():
     return postcards
 
 
-
-# get ids (info)
-# get 50 random postcards
-# db.PostcardsCollection.aggregate([{$sample: {size: 2}}])
-# https://docs.mongodb.com/manual/reference/operator/aggregation/sample/#behavior
-
-# get by time period
-
-# get by from_address
-
-# get by destination
+@app.get("/timeperiod", response_model=List[Postcard])
+def get_postcard_by_time_period(time_period: str):
+    postcards = []
+    for postcard in collection.find({"time_period": time_period}):
+        postcards.append(postcard)
+    return postcards
