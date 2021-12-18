@@ -2,7 +2,8 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import motor.motor_asyncio
+# import motor.motor_asyncio
+from pymongo import MongoClient
 from pydantic import BaseModel
 from typing import Optional, List
 from bson import ObjectId
@@ -23,7 +24,7 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-client = motor.motor_asyncio.AsyncIOMotorClient(
+client = MongoClient(
     f"mongodb+srv://admin:{os.environ['MONGOPASSWORD']}@cluster0.kbeng.mongodb.net/PostcardsDB?retryWrites=true&w=majority")
 db = client.PostcardsDB
 collection = db.PostcardsCollection
@@ -57,18 +58,42 @@ class Postcard(BaseModel):
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Postcards Database"}
 
 
 # TODO filter postcards with null coords
 # TODO error if no postcards were found
 @app.get("/postcards", response_model=List[Postcard])
-async def get_all_postcards():
-    postcards = await collection.find().to_list(100)
-    return {"postcard": f"{postcards[1]}"}
+def get_all_postcards():
+    postcards = []
+    for postcard in collection.find():
+        postcards.append(postcard)
+    return postcards
 
 
 @app.get("/postcards/{id}", response_model=Postcard)
-async def get_postcard_by_id(id: int):
-    postcard = await collection.find_one({"id": id})
+def get_postcard_by_id(id: int):
+    postcard = collection.find_one({"id": id})
     return postcard
+
+
+@app.get("/randompostcards", response_model=List[Postcard])
+def get_random_postcards():
+    postcards = []
+    pipeline = [{"$sample": {"size": 2}}]
+    for postcard in collection.aggregate(pipeline):
+        postcards.append(postcard)
+    return postcards
+
+
+
+# get ids (info)
+# get 50 random postcards
+# db.PostcardsCollection.aggregate([{$sample: {size: 2}}])
+# https://docs.mongodb.com/manual/reference/operator/aggregation/sample/#behavior
+
+# get by time period
+
+# get by from_address
+
+# get by destination
