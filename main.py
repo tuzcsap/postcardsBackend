@@ -61,14 +61,28 @@ async def root():
     return {"message": "Postcards Database"}
 
 
-# TODO filter postcards with null coords
-# TODO error if no postcards were found
 @app.get("/postcards", response_model=List[Postcard])
 def get_all_postcards():
     postcards = []
     for postcard in collection.find():
         postcards.append(postcard)
     return postcards
+
+
+@app.get("/postcards/filter", response_model=List[Postcard])
+def get_filtered_postcards(time_period: str, settlement_from: str = "", settlement_to: str = ""):
+    postcards = []
+    query_dict = {"time_period": time_period}
+
+    if settlement_from:
+        query_dict["settlement_from"] = settlement_from
+    if settlement_to:
+        query_dict["settlement_to"] = settlement_to
+
+    for postcard in collection.find(query_dict):
+        postcards.append(postcard)
+    return postcards
+
 
 
 @app.get("/postcards/{id}", response_model=Postcard)
@@ -92,3 +106,19 @@ def get_postcard_by_time_period(time_period: str):
     for postcard in collection.find({"time_period": time_period}):
         postcards.append(postcard)
     return postcards
+
+
+@app.get("/cities/to")
+def get_all_cities_to():
+    cities = []
+    for city in collection.distinct('settlement_to'):
+        cities.append(city)
+    return cities
+
+
+@app.get("/cities/from")
+def get_all_cities_from():
+    cities = []
+    for city in collection.distinct('settlement_from'):
+        cities.append(city)
+    return cities
