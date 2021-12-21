@@ -13,7 +13,8 @@ app = FastAPI()
 
 origins = [
     "http://localhost:8080",
-    "http://localhost"
+    "http://localhost",
+    "http://127.0.0.1:8080"
 ]
 
 app.add_middleware(
@@ -52,6 +53,8 @@ class Postcard(BaseModel):
     lng_from: Optional[str]
     lat_to: Optional[str]
     lng_to: Optional[str]
+    city_to: Optional[str]
+    city_from: Optional[str]
     time_period: Optional[str]
     tags: Optional[List[str]]
 
@@ -75,9 +78,9 @@ def get_filtered_postcards(time_period: str, settlement_from: str = "", settleme
     query_dict = {"time_period": time_period}
 
     if settlement_from:
-        query_dict["settlement_from"] = settlement_from
+        query_dict["city_from"] = settlement_from
     if settlement_to:
-        query_dict["settlement_to"] = settlement_to
+        query_dict["city_to"] = settlement_to
 
     for postcard in collection.find(query_dict):
         postcards.append(postcard)
@@ -111,7 +114,7 @@ def get_postcard_by_time_period(time_period: str):
 @app.get("/cities/to")
 def get_all_cities_to():
     cities = []
-    for city in collection.distinct('settlement_to'):
+    for city in collection.distinct('city_to'):
         cities.append(city)
     return cities
 
@@ -119,6 +122,6 @@ def get_all_cities_to():
 @app.get("/cities/from")
 def get_all_cities_from():
     cities = []
-    for city in collection.distinct('settlement_from'):
+    for city in collection.distinct('city_from'):
         cities.append(city)
     return cities
