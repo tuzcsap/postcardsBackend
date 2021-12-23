@@ -31,7 +31,7 @@ jobs:
      
     - name: Build and push container image to registry 
       run: |
-        echo "MONGOPASSWORD=${secrets.MONGOPASSWORD}" > .env
+        echo MONGOPASSWORD=${{secrets.MONGOPASSWORD}} > .env
         docker build . -t postcardsbackend.azurecr.io/postcardsbackend:${{ github.sha }}
         docker push postcardsbackend.azurecr.io/postcardsbackend:${{ github.sha }}
         
